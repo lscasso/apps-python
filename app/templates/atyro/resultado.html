@@ -1,0 +1,41 @@
+{% import 'macros/page_macros.html' as page %}
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="ui stackable centered grid container">
+  <div class="twelve wide column">
+    <h2 class="ui header">
+              Atyro
+          <div class="sub header">Descargar el archivo generado</div>
+    </h2>
+    <ul>
+        {% if salida.count() > 1 %}
+          Cédulas en Hoja2 pero no en BPS
+          {% for sal in salida %}
+          <li>
+              {{ sal }}
+
+          </li>
+          {% endfor %}
+        {% endif %}
+    </ul>
+    <br>
+    <br>
+    <div class="two fields">
+      <div class="field" onclick="location.href='download/nomina.bps'">
+        <input type="submit" value="Descargar Archivo" class="ui button">
+      </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <div class="two fields">
+      <div class="field" onclick="location.href=''">
+        <input type="submit" value="Volver" class="ui button">
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock content %}

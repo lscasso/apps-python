@@ -1,0 +1,50 @@
+{% import 'macros/page_macros.html' as page %}
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="ui stackable centered grid container">
+  <div class="twelve wide column">
+    <h2 class="ui header">
+              Trasposiciones
+          <div class="sub header">Subir archivos para realizar Trasposiciones</div>
+    </h2>
+
+    <!--
+    {% with messages=get_flashed_messages(with_categories=true) %}
+     {% for category, message in messages %}
+      <div class='ui {{category}} message'>
+        <i class="close icon"></i>
+        {{ message }}
+       </div>
+     {% endfor %}
+    {% endwith %}
+-->
+
+    <form method="post" enctype="multipart/form-data" class="ui form">
+      <div class="two fields">
+
+        <div class="field">
+            <label for="ano">Ejercicio</label>
+            <input type="number" name="ano" id="ano" min="2022" max="2025" value="{{now.year if now.month > 1 else now.year - 1}}" >
+        </div>
+      </div>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="two fields">
+      <div class="field">
+          <label>Archivo SYJ</label>
+          <input type=file name='file1'>
+      </div>
+
+      <div class="field">
+          <label>Archivo Disponibilidad Rubro 0</label>
+          <input type=file name='file2'>
+      </div>
+      </div>
+      <div class="field">
+        <input type="submit" value="Procesar" class="ui button">
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,45 @@
+{% import 'macros/page_macros.html' as page %}
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="ui stackable centered grid container">
+  <div class="twelve wide column">
+    <h2 class="ui header">
+              Atyro
+          <div class="sub header">Subir archivo para Atyro</div>
+    </h2>
+
+    <!--
+    {% with messages=get_flashed_messages(with_categories=true) %}
+     {% for category, message in messages %}
+      <div class='ui {{category}} message'>
+        <i class="close icon"></i>
+        {{ message }}
+       </div>
+     {% endfor %}
+    {% endwith %}
+-->
+
+    <form method="post" enctype="multipart/form-data" class="ui form">
+      <div class="two fields">
+        <div class="field">
+            <label for="mes">Mes</label>
+            <input type="number" name="mes" id="mes" min="1" max="12" value="{{now.month -1 if now.month > 1 else 12}}" >
+        </div>
+        <div class="field">
+            <label for="ano">Año</label>
+            <input type="number" name="ano" id="ano" min="2022" max="2025" value="{{now.year if now.month > 1 else now.year - 1}}" >
+        </div>
+      </div>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="field">
+          <label>Archivo</label>
+          <input type=file name=file>
+      </div>
+      <div class="field">
+        <input type="submit" value="Procesar" class="ui button">
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}
