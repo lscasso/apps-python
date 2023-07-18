@@ -13,18 +13,8 @@ import re
 
 atyro = Blueprint('atyro', __name__)
 
-"""
-@atyro.route('/')
-@login_required
-def index():
-    print('Hello world!', file=sys.stderr)
-    atyro.logger.error('testing info log')
-    return render_template('atyro/index.html')
 
-"""
-
-
-UPLOAD_FOLDER = '/home/lscasso/tmp'
+UPLOAD_FOLDER = '/tmp'
 ATYRO_DOWNLOAD = "app/atyro/download"
 ALLOWED_EXTENSIONS = {'ods', 'xls', 'xlsx'}
 def procesar(filename,nMes ,nAno):

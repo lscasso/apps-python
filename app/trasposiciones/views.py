@@ -15,7 +15,7 @@ import shutil
 trasposiciones = Blueprint('trasposiciones', __name__)
 
 
-UPLOAD_FOLDER = '/home/lscasso/tmp'
+UPLOAD_FOLDER = '/tmp'
 ATYRO_DOWNLOAD = "app/trasposiciones/download"
 ALLOWED_EXTENSIONS = {'ods', 'xls', 'xlsx'}
 def procesar(syjArchivo,rubro0Archivo ,nAno):
@@ -40,8 +40,8 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
         if row.Rubro in (5053000 ,5063000, 5073000,5075000 ):
             #Sale de RRHH 5053000 5071000
             if (proyectado[ (proyectado.Programa == '010300') & (proyectado.Rubro == row.Rubro)].iloc[0]['Saldo'] + row.Saldo >= 0 ):
-                trasponer = trasponer.append({'Tipo':'Entre Programas', 'Rubro':row.Rubro,'Programa' :'010300','Reforzado/Reforzante' : 'Reforzante', 'Trasponer' : row.Saldo },ignore_index=True)
-                trasponer = trasponer.append({'Tipo':'Entre Programas','Rubro':row.Rubro,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzado', 'Trasponer' : -(row.Saldo) },ignore_index=True)
+                trasponer.loc[len(trasponer)] = {'Tipo':'Entre Programas', 'Rubro':row.Rubro,'Programa' :'010300','Reforzado/Reforzante' : 'Reforzante', 'Trasponer' : row.Saldo }
+                trasponer.loc[len(trasponer)] = {'Tipo':'Entre Programas','Rubro':row.Rubro,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzado', 'Trasponer' : -(row.Saldo) }
                 proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] -  row['Saldo']
                 proyectado.loc[(proyectado['Programa'] == '010300') & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == '010300') & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] + row['Saldo']
 
@@ -56,12 +56,12 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
         porCargos = totSBCargos /(totSBCargos + totSBContratados)
         porContratados = 1 - porCargos
         if (totSBCargos *  porCargos > row.Saldo and totSBContratados * porContratados +  row.Saldo >= 0):
-            trasponer = trasponer.append({'Tipo':'Dentro de Programas','Rubro':5011000,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzante', \
-                                          'Trasponer' : round((row.Saldo) * porCargos,2)},ignore_index=True)
-            trasponer = trasponer.append({'Tipo':'Dentro de Programas', 'Rubro':5021000,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzante', \
-                                          'Trasponer' : round((row.Saldo) * porContratados,2)},ignore_index=True)
-            trasponer = trasponer.append({'Tipo':'Dentro de Programas','Rubro':row.Rubro,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzado', \
-                                          'Trasponer' : -row.Saldo},ignore_index=True)
+            trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas','Rubro':5011000,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzante', \
+                                          'Trasponer' : round((row.Saldo) * porCargos,2)}
+            trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas', 'Rubro':5021000,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzante', \
+                                          'Trasponer' : round((row.Saldo) * porContratados,2)}
+            trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas','Rubro':row.Rubro,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzado', \
+                                          'Trasponer' : -row.Saldo}
 
             proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] -  row['Saldo']
             proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5011000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5011000'), 'Saldo']  +  round((row.Saldo) * porCargos,2)
@@ -80,17 +80,17 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
         porCargos = totSBCargos /(totSBCargos + totSBContratados)
         porContratados = 1 - porCargos
         if (totSBCargos *  porCargos > row.Saldo and totSBContratados * porContratados + row.Saldo >= 0):
-            trasponer = trasponer.append({'Tipo':'Dentro de Programas','Rubro':5011000,'Programa' :'010300','Reforzado/Reforzante' : 'Reforzante', \
-                                          'Trasponer' : round((row.Saldo) * porCargos,2)},ignore_index=True)
-            trasponer = trasponer.append({'Tipo':'Dentro de Programas', 'Rubro':5021000,'Programa' : '010300','Reforzado/Reforzante' : 'Reforzante', \
-                                          'Trasponer' : round((row.Saldo) * porContratados,2)},ignore_index=True)
-            trasponer = trasponer.append({'Tipo':'Dentro de Programas','Rubro':row.Rubro,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzado', \
-                                          'Trasponer' : -row.Saldo},ignore_index=True)
+            trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas','Rubro':5011000,'Programa' :'010300','Reforzado/Reforzante' : 'Reforzante', \
+                                          'Trasponer' : round((row.Saldo) * porCargos,2)}
+            trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas', 'Rubro':5021000,'Programa' : '010300','Reforzado/Reforzante' : 'Reforzante', \
+                                          'Trasponer' : round((row.Saldo) * porContratados,2)}
+            trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas','Rubro':row.Rubro,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzado', \
+                                          'Trasponer' : -row.Saldo}
             proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] -  row['Saldo']
             proyectado.loc[(proyectado['Programa'] == '010300') & (proyectado['Rubro'] == '5011000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5011000'), 'Saldo']  +  round((row.Saldo) * porCargos,2)
             proyectado.loc[(proyectado['Programa'] ==  '010300') & (proyectado['Rubro'] == '5021000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5021000'), 'Saldo'] +  round((row.Saldo) * porContratados,2)
         else:
-            error = error.append({'Mensaje' : "Error " + str(row.Rubro) + " " + str(row.Programa)  + " " + str(row.Saldo)},ignore_index=True)
+            error.loc[len(error)] =  {'Mensaje' : "Error " + str(row.Rubro) + " " + str(row.Programa)  + " " + str(row.Saldo)}
     print(trasponer)
     agTrasponer = trasponer.groupby(['Rubro','Programa']).sum('Trasponer').reset_index()
     aTrasponer = pd.merge(agTrasponer, proyectado,on = ['Programa','Rubro'], how = 'inner' )
@@ -101,7 +101,7 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
     atr['ejercicio'] = nAno
     atr = atr[['ejercicio', 'Rubro','Programa','Trasponer' ]]
     for index, row in revisar.iterrows():
-        error = error.append({'Mensaje' : "Error " + str(row.Rubro) + " " + str(row.Programa)  + " " },ignore_index=True)
+        error.loc[len(error)] = {'Mensaje' : "Error " + str(row.Rubro) + " " + str(row.Programa)  + " " }
     shutil.copyfile(os.path.join(trasposiciones.root_path, "download/") + "PLANILLA TRASPOSICION.xlsx",os.path.join(trasposiciones.root_path, "download/") + "ATrasponer.xlsx")
     with pd.ExcelWriter(os.path.join(trasposiciones.root_path, "download/") + "ATrasponer.xlsx", mode='a',if_sheet_exists ='overlay') as writer:
         atr.to_excel( writer, sheet_name='Sheet0', startrow=8, index = False,header=False)

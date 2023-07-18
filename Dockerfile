@@ -2,7 +2,7 @@ FROM python:3.8-alpine
 
 
 # Packages required for psycopg2
-#RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
+RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev g++ zlib-dev jpeg-dev
 
 #MAINTANER Your Name "youremail@domain.tld"
 ENV MAIL_USERNAME=yourmail@test.com
@@ -14,7 +14,7 @@ COPY ./requirements.txt /app/requirements.txt
 WORKDIR /app
 RUN pip3 install -r requirements.txt 
 ENV PYTHONIOENCODING=UTF-8
-RUN pip3 install sqlalchemy_utils flask_dance flask_caching python-gitlab
+#RUN pip3 install sqlalchemy_utils flask_dance flask_caching python-gitlab
 
 COPY . /app
 

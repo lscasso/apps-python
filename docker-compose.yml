@@ -1,12 +1,14 @@
 version: '3.4'
 services:
   server:
+    image: python
     build: .
     ports:
       - '5000:5000'
     volumes:
       - .:/app
-
+    tmpfs:
+        /tmp
   redis:
     image:
       redis:6-alpine
