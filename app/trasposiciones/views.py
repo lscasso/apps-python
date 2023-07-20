@@ -90,8 +90,9 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
             proyectado.loc[(proyectado['Programa'] == '010300') & (proyectado['Rubro'] == '5011000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5011000'), 'Saldo']  +  round((row.Saldo) * porCargos,2)
             proyectado.loc[(proyectado['Programa'] ==  '010300') & (proyectado['Rubro'] == '5021000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5021000'), 'Saldo'] +  round((row.Saldo) * porContratados,2)
         else:
-            error.loc[len(error)] =  {'Mensaje' : "Error " + str(row.Rubro) + " " + str(row.Programa)  + " " + str(row.Saldo)}
-    print(trasponer)
+            error.loc[len(error)] =  {'Mensaje' : "Error " + str(int(row.Rubro)) + " " + str(row.Programa)  + " " + str(row.Saldo)}
+
+
     agTrasponer = trasponer.groupby(['Rubro','Programa']).sum('Trasponer').reset_index()
     aTrasponer = pd.merge(agTrasponer, proyectado,on = ['Programa','Rubro'], how = 'inner' )
 
@@ -101,10 +102,13 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
     atr['ejercicio'] = nAno
     atr = atr[['ejercicio', 'Rubro','Programa','Trasponer' ]]
     for index, row in revisar.iterrows():
-        error.loc[len(error)] = {'Mensaje' : "Error " + str(row.Rubro) + " " + str(row.Programa)  + " " }
+
+        error.loc[len(error)] = {'Mensaje' : "Revisar Rubro: " + str(int(row.RUBRO)) + " Programa: " + str(row.PROGRAMA)  + " " }
+
     shutil.copyfile(os.path.join(trasposiciones.root_path, "download/") + "PLANILLA TRASPOSICION.xlsx",os.path.join(trasposiciones.root_path, "download/") + "ATrasponer.xlsx")
     with pd.ExcelWriter(os.path.join(trasposiciones.root_path, "download/") + "ATrasponer.xlsx", mode='a',if_sheet_exists ='overlay') as writer:
         atr.to_excel( writer, sheet_name='Sheet0', startrow=8, index = False,header=False)
+
 
     return error['Mensaje']
 

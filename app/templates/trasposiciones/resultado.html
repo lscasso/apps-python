@@ -9,7 +9,7 @@
           <div class="sub header">Descargar el archivo generado</div>
     </h2>
     <ul>
-        {% if salida.count() > 1 %}
+        {% if salida.count() >= 1 %}
           Errores encontrados
           {% for sal in salida %}
           <li>
