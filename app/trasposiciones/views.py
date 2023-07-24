@@ -92,23 +92,25 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
         else:
             error.loc[len(error)] =  {'Mensaje' : "Error " + str(int(row.Rubro)) + " " + str(row.Programa)  + " " + str(row.Saldo)}
 
+    if len(trasponer) > 0:
+        agTrasponer = trasponer.groupby(['Rubro','Programa']).sum('Trasponer').reset_index()
+        aTrasponer = pd.merge(agTrasponer, proyectado,on = ['Programa','Rubro'], how = 'inner' )
 
-    agTrasponer = trasponer.groupby(['Rubro','Programa']).sum('Trasponer').reset_index()
-    aTrasponer = pd.merge(agTrasponer, proyectado,on = ['Programa','Rubro'], how = 'inner' )
 
-    aTrasponer = aTrasponer.filter(['Rubro','Nombre.1','Programa','Nombre', 'Presupuestado' , 'Disponible','Trasponer'])
+        aTrasponer = aTrasponer.filter(['Rubro','Nombre.1','Programa','Nombre', 'Presupuestado' , 'Disponible','Trasponer'])
+        atr = aTrasponer
+        atr['ejercicio'] = nAno
+        atr = atr[['ejercicio', 'Rubro','Programa','Trasponer' ]]
+        for index, row in revisar.iterrows():
 
-    atr = aTrasponer
-    atr['ejercicio'] = nAno
-    atr = atr[['ejercicio', 'Rubro','Programa','Trasponer' ]]
-    for index, row in revisar.iterrows():
+            error.loc[len(error)] = {'Mensaje' : "Revisar Rubro: " + str(int(row.RUBRO)) + " Programa: " + str(row.PROGRAMA)  + " " }
 
-        error.loc[len(error)] = {'Mensaje' : "Revisar Rubro: " + str(int(row.RUBRO)) + " Programa: " + str(row.PROGRAMA)  + " " }
-
-    shutil.copyfile(os.path.join(trasposiciones.root_path, "download/") + "PLANILLA TRASPOSICION.xlsx",os.path.join(trasposiciones.root_path, "download/") + "ATrasponer.xlsx")
-    with pd.ExcelWriter(os.path.join(trasposiciones.root_path, "download/") + "ATrasponer.xlsx", mode='a',if_sheet_exists ='overlay') as writer:
-        atr.to_excel( writer, sheet_name='Sheet0', startrow=8, index = False,header=False)
-
+        shutil.copyfile(os.path.join(trasposiciones.root_path, "download/") + "PLANILLA TRASPOSICION.xlsx",os.path.join(trasposiciones.root_path, "download/") + "ATrasponer.xlsx")
+        with pd.ExcelWriter(os.path.join(trasposiciones.root_path, "download/") + "ATrasponer.xlsx", mode='a',if_sheet_exists ='overlay') as writer:
+            atr.to_excel( writer, sheet_name='Sheet0', startrow=8, index = False,header=False)
+    else:
+        shutil.copyfile(os.path.join(trasposiciones.root_path, "download/") + "PLANILLA TRASPOSICION.xlsx",os.path.join(trasposiciones.root_path, "download/") + "ATrasponer.xlsx")
+        error.loc[len(error)] = {'Mensaje' : "No hay trasposiciones a realizar" }
 
     return error['Mensaje']
 
