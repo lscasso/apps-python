@@ -55,7 +55,7 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
 
         porCargos = totSBCargos /(totSBCargos + totSBContratados)
         porContratados = 1 - porCargos
-        if (totSBCargos *  porCargos > row.Saldo and totSBContratados * porContratados +  row.Saldo >= 0):
+        if (totSBCargos *  porCargos +  totSBContratados * porContratados +  row.Saldo >= 0):
             trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas','Rubro':5011000,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzante', \
                                           'Trasponer' : round((row.Saldo) * porCargos,2)}
             trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas', 'Rubro':5021000,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzante', \
@@ -79,7 +79,7 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
 
         porCargos = totSBCargos /(totSBCargos + totSBContratados)
         porContratados = 1 - porCargos
-        if (totSBCargos *  porCargos > row.Saldo and totSBContratados * porContratados + row.Saldo >= 0):
+        if (totSBCargos *  porCargos +  totSBContratados * porContratados + row.Saldo >= 0):
             trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas','Rubro':5011000,'Programa' :'010300','Reforzado/Reforzante' : 'Reforzante', \
                                           'Trasponer' : round((row.Saldo) * porCargos,2)}
             trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas', 'Rubro':5021000,'Programa' : '010300','Reforzado/Reforzante' : 'Reforzante', \
