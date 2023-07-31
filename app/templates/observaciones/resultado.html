@@ -1,0 +1,31 @@
+{% import 'macros/page_macros.html' as page %}
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="ui stackable centered grid container">
+  <div class="twelve wide column">
+    <h2 class="ui header">
+              Observaciones
+          <div class="sub header">Descargar el archivo generado</div>
+    </h2>
+
+    <br>
+    <br>
+    <div class="two fields">
+      <div class="field" onclick="location.href='download/InformeObservaciones.xlsx'">
+        <input type="submit" value="Descargar Archivo" class="ui button">
+      </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <div class="two fields">
+      <div class="field" onclick="location.href=''">
+        <input type="submit" value="Volver" class="ui button">
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock content %}

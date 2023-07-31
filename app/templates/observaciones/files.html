@@ -1,0 +1,14 @@
+{% import 'macros/page_macros.html' as page %}
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+  <ul>
+      {% for file in files %}
+      <li>
+          <a href="{{ (request.path + '/' if request.path != '/' else '') + file }}">
+              {{ (request.path + '/' if request.path != '/' else '') + file }}
+          </a>
+      </li>
+      {% endfor %}
+  </ul>
+{% endblock content %}
