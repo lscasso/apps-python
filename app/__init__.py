@@ -83,4 +83,6 @@ def create_app(config):
     from .trasposiciones import trasposiciones as trasposiciones_blueprint
     app.register_blueprint(trasposiciones_blueprint, url_prefix='/trasposiciones')
 
+    from .observaciones import observaciones as observaciones_blueprint
+    app.register_blueprint(observaciones_blueprint, url_prefix='/observaciones')
     return app
