@@ -46,3 +46,4 @@ WTForms==2.2.1
 Pandas
 openpyxl
 xlrd
+odfpy
