@@ -24,6 +24,7 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
     sueldos = sueldos.groupby(['PROGRAMA','RUBRO',]).sum('TOTAL').reset_index()
     proyectado = pd.read_excel(UPLOAD_FOLDER + "/" + rubro0Archivo,converters = {'Programa': str}, header= 9)
     proyectado = proyectado.merge(sueldos, how = 'outer' , indicator = True, left_on = ['Programa','Rubro'], right_on = ['PROGRAMA','RUBRO'])
+
     revisar = proyectado[proyectado['_merge'] == 'right_only']
 
     proyectado = proyectado[proyectado['_merge'] != 'right_only']
@@ -52,20 +53,28 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
         #Sale de 5011000 y 5021000
         totSBCargos = proyectado[ (proyectado.Programa == row.Programa) & (proyectado.Rubro == 5011000)].iloc[0]['Saldo']
         totSBContratados = proyectado[ (proyectado.Programa == row.Programa) & (proyectado.Rubro == 5021000)].iloc[0]['Saldo']
+        totSBZafrales = proyectado[ (proyectado.Programa == row.Programa) & (proyectado.Rubro == 5031000)].iloc[0]['Saldo']
+        totSBCargos =  totSBCargos if totSBCargos > 0 else 0
+        totSBContratados = totSBContratados if totSBContratados > 0 else 0
+        totSBZafrales = totSBZafrales if totSBZafrales > 0 else 0
+        if totSBCargos + totSBContratados  + totSBZafrales> 0:
+            porCargos = totSBCargos /(totSBCargos + totSBContratados + totSBZafrales)
+            porContratados = totSBContratados /(totSBCargos + totSBContratados + totSBZafrales)
+            porZafrales = totSBZafrales /(totSBCargos + totSBContratados + totSBZafrales)
+            if (totSBCargos *  porCargos +  totSBContratados * porContratados +  row.Saldo  + totSBZafrales*porZafrales >= 0):
+                trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas','Rubro':5011000,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzante', \
+                                              'Trasponer' : round((row.Saldo) * porCargos,2)}
+                trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas', 'Rubro':5021000,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzante', \
+                                              'Trasponer' : round((row.Saldo) * porContratados,2)}
+                trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas', 'Rubro':5031000,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzante', \
+                                              'Trasponer' : round((row.Saldo) * porZafrales,2)}
+                trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas','Rubro':row.Rubro,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzado', \
+                                              'Trasponer' : -row.Saldo}
 
-        porCargos = totSBCargos /(totSBCargos + totSBContratados)
-        porContratados = 1 - porCargos
-        if (totSBCargos *  porCargos +  totSBContratados * porContratados +  row.Saldo >= 0):
-            trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas','Rubro':5011000,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzante', \
-                                          'Trasponer' : round((row.Saldo) * porCargos,2)}
-            trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas', 'Rubro':5021000,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzante', \
-                                          'Trasponer' : round((row.Saldo) * porContratados,2)}
-            trasponer.loc[len(trasponer)] = {'Tipo':'Dentro de Programas','Rubro':row.Rubro,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzado', \
-                                          'Trasponer' : -row.Saldo}
-
-            proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] -  row['Saldo']
-            proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5011000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5011000'), 'Saldo']  +  round((row.Saldo) * porCargos,2)
-            proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5021000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5021000'), 'Saldo'] +  round((row.Saldo) * porContratados,2)
+                proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] -  row['Saldo']
+                proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5011000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5011000'), 'Saldo']  +  round((row.Saldo) * porCargos,2)
+                proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5021000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5021000'), 'Saldo'] +  round((row.Saldo) * porContratados,2)
+                proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5031000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5031000'), 'Saldo'] +  round((row.Saldo) * porZafrales,2)
 
 
 
@@ -76,21 +85,31 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
         #Sale de sueldos de RRHH si no hay
         totSBCargos = proyectado[ (proyectado.Programa == '010300') & (proyectado.Rubro == 5011000)].iloc[0]['Saldo']
         totSBContratados = proyectado[ (proyectado.Programa == '010300') & (proyectado.Rubro == 5021000)].iloc[0]['Saldo']
+        totSBZafrales = proyectado[ (proyectado.Programa == '010300') & (proyectado.Rubro == 5031000)].iloc[0]['Saldo']
 
-        porCargos = totSBCargos /(totSBCargos + totSBContratados)
-        porContratados = 1 - porCargos
-        if (totSBCargos *  porCargos +  totSBContratados * porContratados + row.Saldo >= 0):
-            trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas','Rubro':5011000,'Programa' :'010300','Reforzado/Reforzante' : 'Reforzante', \
+        totSBCargos =  totSBCargos if totSBCargos > 0 else 0
+        totSBContratados = totSBContratados if totSBContratados > 0 else 0
+        totSBZafrales = totSBZafrales if totSBZafrales > 0 else 0
+        if totSBCargos + totSBContratados  + totSBZafrales> 0:
+            porCargos = totSBCargos /(totSBCargos + totSBContratados + totSBZafrales)
+            porContratados = totSBContratados /(totSBCargos + totSBContratados + totSBZafrales)
+            porZafrales = totSBZafrales /(totSBCargos + totSBContratados + totSBZafrales)
+            if (totSBCargos *  porCargos +  totSBContratados * porContratados +  row.Saldo  + totSBZafrales*porZafrales >= 0):
+                trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas','Rubro':5011000,'Programa' :'010300','Reforzado/Reforzante' : 'Reforzante', \
                                           'Trasponer' : round((row.Saldo) * porCargos,2)}
-            trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas', 'Rubro':5021000,'Programa' : '010300','Reforzado/Reforzante' : 'Reforzante', \
-                                          'Trasponer' : round((row.Saldo) * porContratados,2)}
-            trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas','Rubro':row.Rubro,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzado', \
-                                          'Trasponer' : -row.Saldo}
-            proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] -  row['Saldo']
-            proyectado.loc[(proyectado['Programa'] == '010300') & (proyectado['Rubro'] == '5011000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5011000'), 'Saldo']  +  round((row.Saldo) * porCargos,2)
-            proyectado.loc[(proyectado['Programa'] ==  '010300') & (proyectado['Rubro'] == '5021000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5021000'), 'Saldo'] +  round((row.Saldo) * porContratados,2)
-        else:
-            error.loc[len(error)] =  {'Mensaje' : "Error " + str(int(row.Rubro)) + " " + str(row.Programa)  + " " + str(row.Saldo)}
+                trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas', 'Rubro':5021000,'Programa' : '010300','Reforzado/Reforzante' : 'Reforzante', \
+                                              'Trasponer' : round((row.Saldo) * porContratados,2)}
+                trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas', 'Rubro':5031000,'Programa' : '010300','Reforzado/Reforzante' : 'Reforzante', \
+                                              'Trasponer' : round((row.Saldo) * porZafrales,2)}
+                trasponer.loc[len(trasponer)] ={'Tipo':'Dentro de Programas','Rubro':row.Rubro,'Programa' :row.Programa,'Reforzado/Reforzante' : 'Reforzado', \
+                                              'Trasponer' : -row.Saldo}
+                proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == row['Rubro']), 'Saldo'] -  row['Saldo']
+                proyectado.loc[(proyectado['Programa'] == '010300') & (proyectado['Rubro'] == '5011000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5011000'), 'Saldo']  +  round((row.Saldo) * porCargos,2)
+                proyectado.loc[(proyectado['Programa'] ==  '010300') & (proyectado['Rubro'] == '5021000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5021000'), 'Saldo'] +  round((row.Saldo) * porContratados,2)
+                proyectado.loc[(proyectado['Programa'] ==  '010300') & (proyectado['Rubro'] == '5031000'), 'Saldo'] = proyectado.loc[(proyectado['Programa'] == row['Programa']) & (proyectado['Rubro'] == '5031000'), 'Saldo'] +  round((row.Saldo) * porZafrales,2)
+            else:
+                error.loc[len(error)] =  {'Mensaje' : "Error " + str(int(row.Rubro)) + " " + str(row.Programa)  + " " + str(row.Saldo)}
+
 
     if len(trasponer) > 0:
         agTrasponer = trasponer.groupby(['Rubro','Programa']).sum('Trasponer').reset_index()
@@ -98,6 +117,9 @@ def procesar(syjArchivo,rubro0Archivo ,nAno):
 
 
         aTrasponer = aTrasponer.filter(['Rubro','Nombre.1','Programa','Nombre', 'Presupuestado' , 'Disponible','Trasponer'])
+        suma = aTrasponer['Trasponer'].sum()
+        aTrasponer.loc[(aTrasponer['Programa'] == '010300') & (aTrasponer['Rubro'] == 5011000), 'Trasponer'] -= suma
+
         atr = aTrasponer
         atr['ejercicio'] = nAno
         atr = atr[['ejercicio', 'Rubro','Programa','Trasponer' ]]
